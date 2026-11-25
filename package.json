@@ -2,6 +2,7 @@
     "name": "grip",
     "version": "0.1.0",
     "description": "Game cameras that never lose the player: shots, blends, sequences, shake, in 2D and 3D.",
+    "license": "MIT",
     "type": "module",
     "private": true,
     "exports": {

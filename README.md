@@ -127,3 +127,7 @@ npm run size      what it weighs
 ## Where it came from
 
 Grip grew out of trying [Klipp](https://github.com/pmndrs/klipp), the Cinemachine-style toolkit from pmndrs, on nine small games. The shots and flythroughs were lovely; the ways it lost the player were not. Grip keeps the first and designs out the second: each rule above is one of those ways.
+
+## Licence
+
+MIT.
