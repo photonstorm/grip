@@ -1,0 +1,22 @@
+{
+    "name": "grip",
+    "version": "0.1.0",
+    "description": "Game cameras that never lose the player: shots, blends, sequences, shake, in 2D and 3D.",
+    "type": "module",
+    "private": true,
+    "exports": {
+        ".": { "types": "./dist/types/index.d.ts", "default": "./dist/grip.js" },
+        "./input": { "types": "./dist/types/input.d.ts", "default": "./dist/input.js" }
+    },
+    "files": ["dist", "src"],
+    "scripts": {
+        "build": "node build.mjs",
+        "check": "node build.mjs --check",
+        "test": "node build.mjs --test",
+        "size": "node build.mjs --size"
+    },
+    "devDependencies": {
+        "esbuild": "0.28.2",
+        "typescript": "5.6.3"
+    }
+}
