@@ -80,6 +80,8 @@ export class Shaker {
         });
     }
     add(trauma: number) { this.trauma = Math.min(1, this.trauma + trauma); }
+    /** Stops every kick and all trauma at once. */
+    clear() { this.kicks.length = 0; this.trauma = 0; }
 
     /** Advances the clock and writes this moment's shake for a camera at `eye`. */
     apply(dt: number, eye: Readonly<V3>, wobble: V3, nudge: V3) {

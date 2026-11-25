@@ -67,9 +67,51 @@ Each was a way a camera lost the player in our tests, and Grip can't do it:
 
 `grip/input` is kept apart so the rest runs anywhere. `orbitHand(element, orbit)`: drag to turn, right-drag or two fingers to pan, scroll or pinch to zoom. `lookHand(element, look)`: captures the mouse where the browser allows, drags where it doesn't; a zoomed lens turns slower.
 
+## The timeline
+
+`grip/timeline` lays shots, values, sounds, events and kicks out against time, as a video editor lays out clips. A script is plain data, so it can be written by hand or by a tool, kept as JSON, and read in a diff.
+
+```ts
+import { Timeline, inspector, webAudio } from 'grip/timeline';
+
+const tl = new Timeline({
+    name: 'Reveal',
+    tracks: [
+        { kind: 'camera', clips: [
+            { at: 0, length: 5, shot: 'crane' },
+            { at: 5, length: 3, shot: 'close' },
+            { at: 8, length: 4, shot: 'spin', blend: 1.2 }   // blends in from the picture before
+        ] },
+        { kind: 'value', name: 'fog', keys: [[0, 0.2], [8, 0.6], [12, 0.1, 'out']] },
+        { kind: 'sound', clips: [{ at: 0, sound: 'drone' }, { at: 8, sound: 'launch' }] },
+        { kind: 'event', marks: [{ at: 8, name: 'fire' }] },
+        { kind: 'shake', kicks: [{ at: 8, push: [0, 0.35, 0], shape: 'rumble', time: 1.4 }] }
+    ]
+}, { director: cam, sounds: webAudio(audioCtx, buffers) });
+
+tl.bind('fog', v => (fog = v));
+tl.on('fire', () => launchRockets());
+tl.onEnd = () => cam.blend('player', 1.5);
+tl.play();
+
+// every frame, before the director
+tl.update(dt);
+cam.update(dt);
+```
+
+- **Camera clips** cut, or blend in over `blend` seconds (`ease`, `arc`). The clip's shot wakes as it comes on, so a rail with a `duration` runs from its start.
+- **Values** are keyframes `[time, value, ease?]`: a number or a list of them. `bind` calls you with the value on every update and seek; `value(name, t)` reads it at any time.
+- **Sounds** go through a `SoundPlayer`: `webAudio(ctx, buffers, out)` is one, or bring your own.
+- **Events** call `onEvent` and `on(name)` as playback passes them; **kicks** go to the director's shaker.
+- `play(from?)`, `pause()` (the picture holds still), `stop()`, `skip()` (straight to the end, then `onEnd`), `speed`, `loop`.
+- `seek(t)` lands exactly where playing would have: it replays the camera from the last cut. Events and sounds on the way are skipped; sounds that should be playing at `t` start part way in.
+- `inspect()` says where it's at; `problems()` lists what's wrong with the script, such as shots the director doesn't have.
+
+`inspector(tl, { parent })` puts a read-only view of it on the page: every track against time, what's on now, a playhead to scrub, play and pause. Its colours are CSS variables on `.grip-timeline`.
+
 ## Tests
 
-`npm test` runs every way a camera can lose the player that Grip rules out, and the rest of what it promises, headless in Node.
+`npm test` runs every way a camera can lose the player that Grip rules out, and the rest of what it and the timeline promise, headless in Node.
 
 ## Building
 
@@ -78,7 +120,7 @@ Not on npm yet. Copy `src/` into your project, or import `dist/grip.js` (types i
 ```
 npm install
 npm test          type-check, then the tests
-npm run build     dist/grip.js, dist/input.js and their types
+npm run build     dist/grip.js, input.js, timeline.js and their types
 npm run size      what it weighs
 ```
 

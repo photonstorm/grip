@@ -62,6 +62,8 @@ export class Director {
     readonly shaker = new Shaker();
     /** The live shot. */
     live: Shot | null = null;
+    /** How fast the director's clock runs against the `dt` it's given: 0 holds the picture still, as a paused timeline does. */
+    rate = 1;
 
     private shots = new Map<string, Shot>();
     private frames = new Map<Shot, Frame>();
@@ -136,6 +138,7 @@ export class Director {
 
     update(dt: number): View {
         // a clock that jumped backwards, or broke, counts as no time
+        dt *= this.rate;
         if (!(dt > 0)) dt = 0;
         this.time += dt;
         const ctx = this.ctx;

@@ -58,6 +58,8 @@ export declare class Director {
     readonly shaker: Shaker;
     /** The live shot. */
     live: Shot | null;
+    /** How fast the director's clock runs against the `dt` it's given: 0 holds the picture still, as a paused timeline does. */
+    rate: number;
     private shots;
     private frames;
     private fade;

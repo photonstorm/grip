@@ -6,7 +6,8 @@
     "private": true,
     "exports": {
         ".": { "types": "./dist/types/index.d.ts", "default": "./dist/grip.js" },
-        "./input": { "types": "./dist/types/input.d.ts", "default": "./dist/input.js" }
+        "./input": { "types": "./dist/types/input.d.ts", "default": "./dist/input.js" },
+        "./timeline": { "types": "./dist/types/timeline/index.d.ts", "default": "./dist/timeline.js" }
     },
     "files": ["dist", "src"],
     "scripts": {

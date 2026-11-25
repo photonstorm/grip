@@ -39,6 +39,8 @@ export declare class Shaker {
     private clock;
     kick(k: Kick): void;
     add(trauma: number): void;
+    /** Stops every kick and all trauma at once. */
+    clear(): void;
     /** Advances the clock and writes this moment's shake for a camera at `eye`. */
     apply(dt: number, eye: Readonly<V3>, wobble: V3, nudge: V3): void;
 }

@@ -1,8 +1,8 @@
-// Builds Grip: TypeScript's checker over everything, then esbuild packs dist/grip.js and dist/input.js, with types.
+// Builds Grip: TypeScript's checker over everything, then esbuild packs dist/grip.js, input.js and timeline.js, with types.
 //
 //   node build.mjs            check, then build dist/ (stops on any type error)
 //   node build.mjs --check    check only
-//   node build.mjs --test     check, then run test/grip.ts headless in Node
+//   node build.mjs --test     check, then run the tests headless in Node
 //   node build.mjs --size     what Grip weighs, minified and gzipped
 import * as esbuild from 'esbuild';
 import { spawnSync } from 'node:child_process';
@@ -20,20 +20,24 @@ const run = (...a) => spawnSync(process.execPath, [tsc, ...a], { stdio: 'inherit
 if (!run('--noEmit', '-p', here)) { console.error('Type errors: not built.'); process.exit(1); }
 
 if (args.includes('--size')) {
-    for (const [name, contents] of [['Grip', `export * from './src/index';`], ['with input', `export * from './src/index'; export * from './src/input';`]]) {
+    for (const [name, contents] of [['Grip', `export * from './src/index';`], ['with input', `export * from './src/index'; export * from './src/input';`], ['the timeline', `export * from './src/timeline/timeline';`], ['and its inspector', `export * from './src/timeline/index';`]]) {
         const r = await esbuild.build({ stdin: { contents, resolveDir: here, loader: 'ts' }, bundle: true, minify: true, format: 'esm', write: false, logLevel: 'silent' });
         const code = r.outputFiles[0].contents;
         console.log(`${name}: ${(code.length / 1024).toFixed(1)} KB minified, ${(gzipSync(code, { level: 9 }).length / 1024).toFixed(1)} KB gzipped`);
     }
 } else if (args.includes('--test')) {
     const out = join(here, 'test/.run.mjs');
-    await esbuild.build({ entryPoints: [join(here, 'test/grip.ts')], outfile: out, bundle: true, format: 'esm', platform: 'node', logLevel: 'warning' });
-    process.exit(spawnSync(process.execPath, [out], { stdio: 'inherit' }).status ?? 1);
+    let failed = false;
+    for (const name of ['grip', 'timeline']) {
+        await esbuild.build({ entryPoints: [join(here, `test/${name}.ts`)], outfile: out, bundle: true, format: 'esm', platform: 'node', logLevel: 'warning' });
+        if (spawnSync(process.execPath, [out], { stdio: 'inherit' }).status !== 0) failed = true;
+    }
+    process.exit(failed ? 1 : 0);
 } else if (!args.includes('--check')) {
     const dist = join(here, 'dist');
     rmSync(dist, { recursive: true, force: true });
     await esbuild.build({
-        entryPoints: { grip: join(here, 'src/index.ts'), input: join(here, 'src/input.ts') },
+        entryPoints: { grip: join(here, 'src/index.ts'), input: join(here, 'src/input.ts'), timeline: join(here, 'src/timeline/index.ts') },
         outdir: dist, bundle: true, format: 'esm', target: 'es2022', minify: true, sourcemap: 'linked', logLevel: 'info'
     });
     if (!run('-p', join(here, 'tsconfig.build.json'))) process.exit(1);
